@@ -15,7 +15,7 @@
     import { computed, watch, ref, nextTick } from "vue";
     import { useStore } from "../../../scripts/plugins/store";
     import AppGameVvhHeader from "./AppGameVvhHeader.vue";
-    import AppGameVvhBody from "./AppGameVvhBody.vue";
+    import AppGameVvhBody from "./AppGameVvhBodyCV.vue";
 
     const store = useStore();
     const vvhScrolling = computed(() => store.getters.options.vvhScrolling);
@@ -40,7 +40,6 @@
             }
         }
     );
-    const emit = defineEmits(['move']);
     const handleMoveClick = (moveStr: string) => {
         console.log(`handleMoveClick called with move: ${moveStr}, isCvInstance: ${props.isCvInstance}`);
         if (!props.isCvInstance) {

@@ -29,11 +29,11 @@ const animateTTT = (volume: number, moveObj: Types.Move): number => {
     const yOff = Math.floor(diffIdx / 3) * 22;
     if (turn === 'x') {
         playMoveSFX('ttt/X.mp3');
-        gsap.to("#xa" + diffIdx, {duration: 0.25, attr: {x2: 19 + xOff, y2: 19 + yOff}});
-        gsap.to("#xb" + diffIdx, {delay: 0.25, duration: 0.25, attr: {x2: 3 + xOff, y2: 19 + yOff}});
+        gsap.to("#xa" + diffIdx, { duration: 0.25, attr: { x2: 19 + xOff, y2: 19 + yOff } });
+        gsap.to("#xb" + diffIdx, { delay: 0.25, duration: 0.25, attr: { x2: 3 + xOff, y2: 19 + yOff } });
     } else if (turn === 'o') {
         playMoveSFX('ttt/O.mp3');
-        gsap.to("#o" + diffIdx, {duration: 0.5, attr: {"stroke-dashoffset": 0}})
+        gsap.to("#o" + diffIdx, { duration: 0.5, attr: { "stroke-dashoffset": 0 } })
     }
     return 500;
 }
@@ -41,8 +41,8 @@ const animateTTT = (volume: number, moveObj: Types.Move): number => {
 const animateSim = (volume: number, moveObj: Types.Move): number => {
     const vertices = [[4, 0], [2, 3.4641], [-2, 3.4641], [-4, 0], [-2, -3.4641], [2, -3.4641]];
     playMoveSFX('ttt/O.mp3');
-    const d = Number(moveObj.move[1]) - 1;    
-    gsap.to("#simline" + moveObj.move, {duration: 0.5, attr: {"x2": vertices[d][0], "y2": vertices[d][1]}});
+    const d = Number(moveObj.move[1]) - 1;
+    gsap.to("#simline" + moveObj.move, { duration: 0.5, attr: { "x2": vertices[d][0], "y2": vertices[d][1] } });
     return 500;
 }
 
@@ -58,7 +58,7 @@ const animateQuarto = (volume: number, currPosition: string, nextPosition: strin
             }
         }
         var toCoords = [12.5 + (to % 4) * 25, 12.5 + Math.floor(to / 4) * 25];
-        gsap.fromTo("#toPlace", {x: 58, y: 113}, {duration: 0.5, x: toCoords[0], y: toCoords[1]});
+        gsap.fromTo("#toPlace", { x: 58, y: 113 }, { duration: 0.5, x: toCoords[0], y: toCoords[1] });
         duration += 500;
         delay = 0.5
         if (nextPosition[18] != '-') {
@@ -92,10 +92,10 @@ const animateQuarto = (volume: number, currPosition: string, nextPosition: strin
         newText.setAttribute("opacity", "0.001");
         newText.appendChild(document.createTextNode("Placing:"));
         g.appendChild(newText);
-        
+
         duration += 500;
-        gsap.fromTo(".appearingPiece", {opacity: 0}, {duration: 0.5, delay: delay, opacity: 1});
-        gsap.fromTo("#textIntermediate", {opacity: 0}, {duration: 0.5, delay: delay, opacity: 1});
+        gsap.fromTo(".appearingPiece", { opacity: 0 }, { duration: 0.5, delay: delay, opacity: 1 });
+        gsap.fromTo("#textIntermediate", { opacity: 0 }, { duration: 0.5, delay: delay, opacity: 1 });
     }
     return duration;
 }
@@ -196,14 +196,14 @@ const animateImageAutoGUI = (currPosition: string, nextPosition: string): number
         if (store.getters.currentGameId === "kayles") {
             // TEMPORARY; WILL REMOVE THIS SPECIAL HANDLING FOR KAYLES WHEN CUSTOM ANIMATIONS ARE IMPLEMENTED
             for (i of fadeOutIdxs) {
-                gsap.fromTo("#entity" + i, {scale: 1, rotation: 0, transformOrigin: "center center"},
-                {duration: 0.5, scale: 0, rotation: 540, transformOrigin: "center center"});
+                gsap.fromTo("#entity" + i, { scale: 1, rotation: 0, transformOrigin: "center center" },
+                    { duration: 0.5, scale: 0, rotation: 540, transformOrigin: "center center" });
             }
             return 500;
         }
 
         for (i of fadeOutIdxs) { // Play fade-out animations
-            gsap.fromTo("#entity" + i, {autoAlpha: 1}, {duration: 0.5, autoAlpha: 0});
+            gsap.fromTo("#entity" + i, { autoAlpha: 1 }, { duration: 0.5, autoAlpha: 0 });
         }
 
         var newElement;
@@ -230,11 +230,11 @@ const animateImageAutoGUI = (currPosition: string, nextPosition: string): number
             const idxFrom = slide[0];
             const toCoords = centers[slide[1]];
             const fromCoords = centers[idxFrom];
-            gsap.fromTo("#entity" + idxFrom, {autoAlpha: 1}, {duration: 0.001, autoAlpha: 0});
+            gsap.fromTo("#entity" + idxFrom, { autoAlpha: 1 }, { duration: 0.001, autoAlpha: 0 });
             newElement = spawnImageEntity(currBoard[idxFrom], idxFrom, centers, charImages, widthFactor);
             newElement.setAttribute("id", "movingEntity" + idxFrom);
             g.appendChild(newElement);
-            gsap.to("#movingEntity" + idxFrom, {duration: 0.5, x: toCoords[0] - fromCoords[0], y: toCoords[1] - fromCoords[1]});
+            gsap.to("#movingEntity" + idxFrom, { duration: 0.5, x: toCoords[0] - fromCoords[0], y: toCoords[1] - fromCoords[1] });
         }
 
         if (foregroundImagePath !== "") { // Redraw foreground image in front of any newly introduced entities
@@ -245,7 +245,7 @@ const animateImageAutoGUI = (currPosition: string, nextPosition: string): number
             g.appendChild(newForegroundElement);
         }
         if (fadeInIdxs.length > 0 || textFadeInIdxs.length > 0) { // Play fade-in animations
-            gsap.fromTo(".appearingEntity", {opacity: 0.001}, {duration: 0.5, opacity: 1});
+            gsap.fromTo(".appearingEntity", { opacity: 0.001 }, { duration: 0.5, opacity: 1 });
         }
         return 500;
     } else if (animationType === "custom") {
@@ -253,10 +253,21 @@ const animateImageAutoGUI = (currPosition: string, nextPosition: string): number
     }
     return 0;
 }
-
 export const handleMoveAnimation = (volume: number, currentMatch: Types.Match, moveObj: Types.Move) => {
-    const currPosition = currentMatch.round.position.autoguiPosition;
-    const nextPosition = moveObj.autoguiPosition;
+    const currPosition = currentMatch?.round?.position?.autoguiPosition;
+    const nextPosition = moveObj?.autoguiPosition;
+
+    // const nextPosition = "M_45_52_x"
+
+    console.log('Current Position:', currPosition);
+    console.log('Next Position:', nextPosition);
+
+    // Validate that both positions are defined
+    if (!currPosition || !nextPosition) {
+        console.error('autoguiPosition is undefined:', { currPosition, nextPosition });
+        return 0; // Return 0 or an appropriate fallback value if positions are not valid
+    }
+
     if (currentMatch.gameId === 'tictactoe') {
         return animateTTT(volume, moveObj);
     } else if (currentMatch.gameId === 'sim') {
@@ -294,7 +305,7 @@ export const animationEpilogue = (currentMatch: Types.Match) => {
         return; // todo
     } else if (currentMatch.gameId === 'quarto') {
         if (document.getElementById("toPlace")) {
-            gsap.to("#toPlace", {duration: 0.001, x: 58, y: 113});
+            gsap.to("#toPlace", { duration: 0.001, x: 58, y: 113 });
         }
         if (document.getElementById("animationForeground")) {
             document.getElementById("animationForeground")!.remove();
@@ -307,7 +318,7 @@ export const animationEpilogue = (currentMatch: Types.Match) => {
             // 50% of the time for some reason) so we use fromTo instead 
             var entities = document.getElementsByClassName('entity');
             if (entities.length > 0) {
-                gsap.fromTo(".entity", {autoAlpha: 0}, {duration: 0.001, autoAlpha: 1});
+                gsap.fromTo(".entity", { autoAlpha: 0 }, { duration: 0.001, autoAlpha: 1 });
             }
             if (document.getElementById("animationForeground")) {
                 document.getElementById("animationForeground")!.remove();

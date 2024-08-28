@@ -30,8 +30,13 @@ export const loadGames = async (app: Types.App) => {
     return app;
 };
 
+<<<<<<< Updated upstream
 export const addInstructions = async (app: Types.App, payload: {gameId: string, variantId: string}) => {
     const instructions = await GCTAPI.loadInstructions(`${app.dataSources.gameAPI}${app.currentMatch.gameId}/${app.currentMatch.variantId}/instructions/?lang=${app.preferences.locale}`);
+=======
+export const addInstructions = async (app: Types.App, payload: { gameId: string, variantId: string }) => {
+    const instructions = await GCTAPI.loadInstructions(`${app.dataSources.gameAPI}${app.currentMatch.gameId}/${app.currentMatch.variantId}/instructions/?locale=${app.preferences.locale}`);
+>>>>>>> Stashed changes
     app.games[payload.gameId].instructions[app.preferences.locale] = instructions ? instructions.instructions : "";
     return app;
 }
@@ -130,7 +135,7 @@ export const initiateMatch = async (app: Types.App, payload: {
     app.currentMatch.id = generateMatchId(app);
     if (!(payload.firstPlayerIsComputer === undefined)) app.currentMatch.firstPlayer.isComputer = payload.firstPlayerIsComputer;
     if (!(payload.secondPlayerIsComputer === undefined)) app.currentMatch.secondPlayer.isComputer = payload.secondPlayerIsComputer;
-    
+
     const autoguiStartPosition = app.games[payload.gameId].variants[payload.variantId].positions[startPosition].autoguiPosition;
     app.currentMatch.round = {
         id: 1,
@@ -298,7 +303,7 @@ export const isEndOfMatch = (app: Types.App) =>
 
 export const exitMatch = (app: Types.App) => {
     pauseAllGameSounds();
-    if (app.currentMatch.rounds.length > 2) { 
+    if (app.currentMatch.rounds.length > 2) {
         app.currentMatch.rounds[app.currentMatch.round.id] = deepcopy(app.currentMatch.round);
         app.matches[app.currentMatch.id] = deepcopy(app.currentMatch);
     }
@@ -329,12 +334,12 @@ export const generateComputerMove = (round: Types.Round) => {
     const currentPositionValue = round.position.positionValue;
 
     let bestMoves = availableMoves.filter((availableMove) => availableMove.moveValue === currentPositionValue || currentPositionValue === "unsolved");
-    
+
     if (CPUStrategy === "Remoteness") {
         if (currentPositionValue === "win" || currentPositionValue === "tie") {
             const minimumRemoteness = Math.min(...bestMoves.map((bestMove) => bestMove.remoteness));
             bestMoves = bestMoves.filter((availableMove) => availableMove.remoteness === minimumRemoteness);
-            
+
             if (supportsWinBy) {
                 const maximumWinBy = Math.max(...bestMoves.map((bestMove) => bestMove.winby));
                 bestMoves = bestMoves.filter((availableMove) => availableMove.winby === maximumWinBy);
@@ -348,7 +353,7 @@ export const generateComputerMove = (round: Types.Round) => {
                 bestMoves = bestMoves.filter((availableMove) => availableMove.winby === minimumWinBy);
             }
         }
-    } else if (CPUStrategy === "Win By"){
+    } else if (CPUStrategy === "Win By") {
         if (currentPositionValue === "win" || currentPositionValue === "tie") {
             const maximumWinBy = Math.max(...bestMoves.map((bestMove) => bestMove.winby));
             bestMoves = bestMoves.filter((availableMove) => availableMove.winby === maximumWinBy);
@@ -372,19 +377,45 @@ export const generateComputerMove = (round: Types.Round) => {
     return bestMoves[Math.floor(Math.random() * bestMoves.length)].move;
 };
 
+<<<<<<< Updated upstream
 export const runMove = async (app: Types.App, payload: { move: string }) => {
     app.currentMatch.round.move = payload.move;
     const moveObj = app.currentMatch.round.position.availableMoves[payload.move];
+=======
+
+export const runMove = async (app: Types.App, payload: { autoguiMove: string }) => {
+    console.log(payload)
+    app.currentMatch.round.autoguiMove = payload.autoguiMove;
+    const moveObj = app.currentMatch.round.position.availableMoves[payload.autoguiMove];
+>>>>>>> Stashed changes
     const animationDuration = handleMoveAnimation(app.preferences.volume, app.currentMatch, moveObj);
+
+    if (!moveObj || !moveObj.position) {
+        console.error('moveObj or moveObj.position is undefined.');
+        return; // Exit early to prevent further errors
+    }
+
+    var autoguiPosition = moveObj.position;
+
+    if (typeof autoguiPosition !== 'string') {
+        console.error('autoguiPosition is not a valid string.');
+        return; // Early return to avoid further errors
+    }
+
     if (animationDuration > 0) {
         app.currentMatch.animationPlaying = true;
+    }
+
+    if (typeof moveObj.moveValue === 'undefined') {
+        console.error('moveObj.moveValue is undefined.');
+        return; // Exit early to avoid further errors
     }
     app.currentMatch.round.moveValue = moveObj.moveValue;
     app.currentMatch.round.autoguiMove = moveObj.autoguiMove;
 
     // Rewrite history by deleting all subsequent moves made earlier.
     app.currentMatch.rounds.splice(
-        app.currentMatch.round.id, 
+        app.currentMatch.round.id,
         app.currentMatch.rounds.length - app.currentMatch.round.id
     );
     app.currentMatch.rounds.push(deepcopy(app.currentMatch.round));
@@ -397,6 +428,10 @@ export const runMove = async (app: Types.App, payload: { move: string }) => {
         });
         if (updatedApp) break;
     }
+    if (!updatedApp) {
+        console.error("Failed to load position after multiple attempts.");
+        return null; // Early return to avoid further errors
+    }
     await new Promise(r => setTimeout(r, animationDuration));
     app.currentMatch.animationPlaying = false;
     animationEpilogue(app.currentMatch);
@@ -405,12 +440,12 @@ export const runMove = async (app: Types.App, payload: { move: string }) => {
         return app;
     }
 
-    const updatedPosition = { 
+    const updatedPosition = {
         ...updatedApp
-        .games[app.currentMatch.gameId]
-        .variants[app.currentMatch.variantId].
-        positions[
-            app.
+            .games[app.currentMatch.gameId]
+            .variants[app.currentMatch.variantId].
+            positions[
+        app.
             currentMatch.
             round.
             position.
@@ -418,8 +453,18 @@ export const runMove = async (app: Types.App, payload: { move: string }) => {
             position
         ]
     };
+<<<<<<< Updated upstream
     app.currentMatch.moveHistory += moveHistoryDelim + (moveObj.move ? moveObj.move : moveObj.move);
     let autoguiPosition = updatedPosition.autoguiPosition;
+=======
+    app.currentMatch.moveHistory += moveHistoryDelim + moveObj.move;
+    autoguiPosition = updatedPosition.autoguiPosition;
+    if (!autoguiPosition || typeof autoguiPosition !== 'string') {
+        console.error('autoguiPosition is undefined or not a string.');
+        return null; // Early return to prevent further errors
+    }
+
+>>>>>>> Stashed changes
     if ((autoguiPosition.charAt(0) == '1' || autoguiPosition.charAt(0) == '2') && autoguiPosition.charAt(1) == '_') { // in proper autogui format
         app.currentMatch.round.firstPlayerTurn = autoguiPosition.charAt(0) == '1';
     } else if (app.currentMatch.gameType === "puzzles") {
@@ -461,8 +506,8 @@ const undoRedoAvailable = (app: Types.App, roundOffset: number) => {
     }
     const maxRoundId = app.currentMatch.rounds.length - 1;
     for (let i = app.currentMatch.round.id + roundOffset;
-         i >= 1 && i <= maxRoundId;
-         i += roundOffset
+        i >= 1 && i <= maxRoundId;
+        i += roundOffset
     ) {
         const firstPlayerTurn = app.currentMatch.rounds[i].firstPlayerTurn;
         if (firstPlayerTurn && !firstPlayerIsComputer ||
@@ -545,7 +590,7 @@ export const undoMove = (app: Types.App, payload?: { toRoundId?: number }) => {
     return gotoRoundId(app, toRoundId);
 };
 
-export const updateGameTheme = (app: Types.App, payload: { gameTheme : string }) => {
+export const updateGameTheme = (app: Types.App, payload: { gameTheme: string }) => {
     app.currentMatch.gameTheme = payload.gameTheme;
     return app;
 };

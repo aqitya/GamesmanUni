@@ -15,12 +15,16 @@
                 <button class="buttons" @click="activeTab = 'moveHist'">
                     Move History
                 </button>
+                <button class="buttons" @click="activeTab = 'CV'">
+                    CV
+                </button>
             </div>
             <div id="app-game-menu-content-active">
-                <AppGameVvh v-show="activeTab === 'vvh'" />
+                <AppGameVvh v-show="activeTab === 'vvh'" :isCvInstance="false"/>
                 <!-- <AppGameMenuAnalysis/> -->
                 <AppGameMenuPosition v-show="activeTab === 'startPos'" />
                 <AppGameMenuMoveHistory v-show="activeTab === 'moveHist'" />
+                <AppGameMenuWrapper v-show="activeTab === 'CV'" />
             </div>
         </div>
     </div>
@@ -32,6 +36,7 @@
     import AppGameMenuHeader from "./AppGameMenuHeader.vue";
     import AppGameMenuPosition from "./AppGameMenuPosition.vue";
     import AppGameMenuMoveHistory from "./AppGameMenuHistory.vue";
+    import AppGameMenuWrapper from "./AppGameMenuWrapper.vue"
 
     const activeTab = ref('vvh');
 </script>

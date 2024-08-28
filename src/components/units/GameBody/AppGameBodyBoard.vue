@@ -1,7 +1,17 @@
 <template>
     <component v-if="autoguiPosition === ''" :is="LoadingScreen"/>
-    <component v-else-if="customGameBoardExists" :is="customGUIs[gameId]" />
-    <component v-else :is="ImageAutoGUI" />
+    <component 
+        v-else-if="customGameBoardExists" 
+        :is="customGUIs[gameId]" 
+        :handleMoveClick="handleMoveClick" 
+        @move="$emit('move', $event)"
+    />
+    <component 
+        v-else 
+        :is="ImageAutoGUI" 
+        :handleMoveClick="handleMoveClick" 
+        @move="$emit('move', $event)"
+    />
 </template>
 
 <script lang="ts" setup>
@@ -20,7 +30,15 @@
     const customGUIs: Record<string, any> = {
         "tictactoe": CustomGUITicTacToe,
         "quarto": CustomGUIQuarto,
-        "sim": CustomGUISim
+        "sim": CustomGUISim 
     };
     const customGameBoardExists = computed(() => gameId.value in customGUIs);
+
+    // Define the handleMoveClick function
+    const handleMoveClick = (moveStr: string) => {
+        console.log(`handleMoveClick called with move: ${moveStr}, isCvInstance: ${store.state.isCvInstance}`);
+        emit('move', moveStr);
+    };
+
+    const emit = defineEmits(['move']);
 </script>
