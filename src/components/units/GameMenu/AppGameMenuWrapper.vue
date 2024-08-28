@@ -2,10 +2,10 @@
   <div id="app-game-container">
     <AppGameMenuCV/>
     <div class="game-instance">
-      <AppGameVvhCV :isCvInstance="true"/>
+      <AppGameVvhCV/>
     </div>
     <div class="game-instance">
-      <AppGameVvh :isCvInstance="false" />
+      <AppGameVvh/>
     </div>
   </div>
 </template>

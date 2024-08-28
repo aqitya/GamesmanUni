@@ -48,7 +48,7 @@ const uploadProgress = ref(0);
 const uploadSuccessMessage = ref<string | null>(null);
 const uploadErrorMessage = ref<string | null>(null);
 
-const s3BucketUrl = '';
+const s3BucketUrl = 'https://aarteebucket.s3.us-east-1.amazonaws.com/';
 
 const store = useStore();
 const appInstance = computed(() => store.getters.appInstance);
@@ -105,11 +105,13 @@ const invokeFunctionUrlAndRunMoves = async () => {
 
   try {
     const payload = {
-      bucket: '',
+      bucket: 'aarteebucket',
       key: selectedFile.value.name,
     };
 
-    const response = await axios.post('', payload);
+    const functionUrl = "https://gxk2mdx64p4whp2oup42jicj3e0cbomu.lambda-url.us-east-1.on.aws/"
+
+    const response = await axios.post(functionUrl, payload);
 
     if (response.status !== 200) {
       throw new Error(`Unexpected status code: ${response.status}`);

@@ -1,6 +1,6 @@
 <template>
     <div id="app-game-vvh">
-        <AppGameVvhHeader/>
+        <AppGameVvhHeader />
         <AppGameVvhBody ref="vvhBody"
                         :style="{
                             'max-height': vvhMaxHeight,
@@ -11,11 +11,10 @@
 </template>
 
 <script lang="ts" setup>
-
     import { computed, watch, ref, nextTick } from "vue";
     import { useStore } from "../../../scripts/plugins/store";
     import AppGameVvhHeader from "./AppGameVvhHeader.vue";
-    import AppGameVvhBody from "./AppGameVvhBodyCV.vue";
+    import AppGameVvhBody from "./AppGameVvhBody.vue";
 
     const store = useStore();
     const vvhScrolling = computed(() => store.getters.options.vvhScrolling);
@@ -24,12 +23,6 @@
 
     /* VVH autoscrolling */
     const vvhBody = ref();
-    const props = defineProps({
-        isCvInstance: {
-        type: Boolean,
-        required: true,
-        }
-    });
     const currentRoundId = computed(() => store.getters.currentRoundId);
     watch(
         () => currentRoundId.value,
@@ -40,16 +33,6 @@
             }
         }
     );
-    const handleMoveClick = (moveStr: string) => {
-        console.log(`handleMoveClick called with move: ${moveStr}, isCvInstance: ${props.isCvInstance}`);
-        if (!props.isCvInstance) {
-            console.log("Executing move on the original instance.");
-            store.dispatch(actionTypes.runMove, { autoguiMove: moveStr });
-        } else {
-            console.log("Move ignored on CV instance.");
-        }
-    };
-
 </script>
 
 <style lang="scss" scoped>
