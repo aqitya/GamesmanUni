@@ -85,7 +85,6 @@ type Getters = {
 };
 
 const getters: Vuex.GetterTree<State, State> & Getters = {
-    appInstance: (state: State) => state.app,
     ambienceVolume: (state: State) => state.app.preferences.ambienceVolume,
     animationPlaying: (state: State) => state.app.currentMatch.animationPlaying,
     availableMove: (state: State) =>
@@ -347,7 +346,7 @@ type Actions = {
     [actionTypes.exitMatch](context: ActionContext): void;
     [actionTypes.restartMatch](context: ActionContext): Promise<void>;
     [actionTypes.runMove](context: ActionContext, payload: {
-        move: string
+        autoguiMove: string
     }): Promise<void>;
     [actionTypes.runComputerMove](context: ActionContext): Promise<void>;
     [actionTypes.redoMove](context: ActionContext): Promise<void>;
@@ -404,7 +403,7 @@ const actions: Vuex.ActionTree<State, State> & Actions = {
         context.commit(mutationTypes.setApp, updatedApp);
         await store.dispatch(actionTypes.runComputerMove);
     },
-    runMove: async (context: ActionContext, payload: { move: string }) => {
+    runMove: async (context: ActionContext, payload: { autoguiMove: string }) => {
         context.state.app.currentMatch.computerMoving = true;
         context.state.app.currentMatch.backgroundLoading = true;
         const updatedApp = await GMU.runMove(context.state.app, payload);
@@ -426,7 +425,7 @@ const actions: Vuex.ActionTree<State, State> & Actions = {
             if (!context.state.app.currentMatch.gameType) return;
             context.state.app.currentMatch.backgroundLoading = true;
             const updatedApp = await GMU.runMove(context.state.app, {
-                move: GMU.generateComputerMove(context.state.app.currentMatch.round)
+                autoguiMove: GMU.generateComputerMove(context.state.app.currentMatch.round)
             });
             context.state.app.currentMatch.backgroundLoading = false;
             if (updatedApp) {
@@ -479,13 +478,6 @@ const actions: Vuex.ActionTree<State, State> & Actions = {
         if (updatedApp) context.commit(mutationTypes.setApp, updatedApp);
     },
     loadMoveHistory: async (context: ActionContext, payload: { history: string }) => {
-<<<<<<< Updated upstream
-        const updatedAppOrError = await GMU.loadMoveHistory(context.state.app, payload);
-        if (updatedAppOrError instanceof Error) {
-            return updatedAppOrError;
-        } else {
-            context.commit(mutationTypes.setApp, updatedAppOrError);
-=======
         // Parse and load initial position, return undefined if initial position is invalid
         payload.history = payload.history.replace(/(\r\n|\n|\r)/gm, "");
         let parsed = payload.history.split(GMU.moveHistoryDelim);
@@ -508,7 +500,6 @@ const actions: Vuex.ActionTree<State, State> & Actions = {
             } else {
                 await store.dispatch(actionTypes.runMove, { autoguiMove: nextMove })
             }
->>>>>>> Stashed changes
         }
     }
 };

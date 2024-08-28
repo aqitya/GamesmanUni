@@ -6,7 +6,7 @@ import * as Defaults from "../../models/datas/defaultApp";
 import { handleMoveAnimation, animationEpilogue } from "./moveAnimation"
 import { playGameAmbience, pauseAllGameSounds } from "./audio"
 import { useStore } from "../plugins/store";
-const moveHistoryDelim = ':';
+export const moveHistoryDelim = ':';
 
 const deepcopy = (obj: Object) => {
     return JSON.parse(JSON.stringify(obj));
@@ -30,13 +30,8 @@ export const loadGames = async (app: Types.App) => {
     return app;
 };
 
-<<<<<<< Updated upstream
-export const addInstructions = async (app: Types.App, payload: {gameId: string, variantId: string}) => {
-    const instructions = await GCTAPI.loadInstructions(`${app.dataSources.gameAPI}${app.currentMatch.gameId}/${app.currentMatch.variantId}/instructions/?lang=${app.preferences.locale}`);
-=======
 export const addInstructions = async (app: Types.App, payload: { gameId: string, variantId: string }) => {
     const instructions = await GCTAPI.loadInstructions(`${app.dataSources.gameAPI}${app.currentMatch.gameId}/${app.currentMatch.variantId}/instructions/?locale=${app.preferences.locale}`);
->>>>>>> Stashed changes
     app.games[payload.gameId].instructions[app.preferences.locale] = instructions ? instructions.instructions : "";
     return app;
 }
@@ -90,8 +85,9 @@ const loadPosition = async (app: Types.App, payload: { gameId: string; variantId
     positions[payload.position] = {
         position: updatedPosition.position,
         autoguiPosition: updatedPosition.autoguiPosition,
-        availableMoves: calculateMoveButtonOpacities(updatedPosition.moves),
-        availableMoveNames: formatMoveNames(updatedPosition.moves),
+        availableMoves: createAutoguiMoveToMoveObject(updatedPosition.moves),
+        availableMoveNames: createMoveToAutoguiMove(updatedPosition.moves),
+        moveToAutoguiMove: createMoveToAutoguiMove(updatedPosition.moves),
         positionValue: updatedPosition.positionValue,
         remoteness: updatedPosition.remoteness,
         winby: updatedPosition.winby,
@@ -120,7 +116,7 @@ export const initiateMatch = async (app: Types.App, payload: {
     const variant = await loadVariant(app, payload);
     game.variants[payload.variantId] = variant;
 
-    const startPosition = payload.startPosition ? payload.startPosition : variant.startPosition;
+    const startPosition = (payload.startPosition && payload.startPosition !== 'random') ? payload.startPosition : variant.startPosition;
 
     const updatedApp = await loadPosition(app, { ...payload, position: startPosition });
     if (!updatedApp) return undefined;
@@ -150,21 +146,36 @@ export const initiateMatch = async (app: Types.App, payload: {
         deepcopy(app.currentMatch.round)
     ];
     playGameAmbience();
-    await addInstructions(app, payload);
+
+    if (payload.startPosition !== 'random') {
+        await addInstructions(app, payload);
+    }
     return app;
 };
 
-const formatMoveNames = (moves: Array<GCTAPITypes.Move>) => {
-    const target: Types.MoveNames = { ...Defaults.defaultAvailableMoveNames };
+/**
+ * @param moves An array of move objects.
+ * @returns A dictionary such that each move object in the original
+ * input array is a key/value pair (key: moveObj.move, value: moveObj.autoguiMove).
+ * This dictionary is used when processing a user-entered move history. 
+ */
+const createMoveToAutoguiMove = (moves: Array<GCTAPITypes.Move>) => {
+    const target: Types.MoveNames = { ...Defaults.defaultMoveToAutoguiMove };
     for (const move in moves) {
-        target[moves[move].move] = moves[move].move;
+        target[moves[move].move] = moves[move].autoguiMove;
     }
     return target;
 };
 
 /** 
  * The input `moves` contains all legal moves from the current position,
- * sorted from best to worst according to value and remoteness.
+ * as an array of move objects sorted from best to worst according to 
+ * value and remoteness.
+ * 
+ * This function will take each move object and put it in a dictionary
+ * with its autoguiMove as the key and itself as the value.
+ * We also add a `moveValueOpacity` field for each move object.
+ * It will then return the dictionary. 
  * 
  * As a reminder, value/remoteness tuples are listed from best to worst as follows:
  *   Low-Remoteness Win, High-Remoteness Win, Low-Remoteness Tie, High-Remoteness Tie, 
@@ -180,15 +191,17 @@ const formatMoveNames = (moves: Array<GCTAPITypes.Move>) => {
  * - The move(s) with the third best remoteness will have an opacity of 0.5.
  * - All other moves will have an opacity of 0.25.
 */
-const calculateMoveButtonOpacities = (moves: Array<GCTAPITypes.Move>) => {
+const createAutoguiMoveToMoveObject = (moves: Array<GCTAPITypes.Move>) => {
     const formattedMoves: Types.Moves = {};
     if (moves.length) {
-        formattedMoves[moves[0].move] = { ...moves[0], moveValueOpacity: 1 };
+        formattedMoves[moves[0].autoguiMove] = { ...moves[0], moveValueOpacity: 1 };
     }
     for (let i = 1; i < moves.length; i++) {
-        formattedMoves[moves[i].move] = { ...moves[i], moveValueOpacity: 1 };
-        const previousMove = formattedMoves[moves[i - 1].move];
-        const currentMove = formattedMoves[moves[i].move];
+        if (!(moves[i].autoguiMove in formattedMoves)) {
+            formattedMoves[moves[i].autoguiMove] = { ...moves[i], moveValueOpacity: 1 };
+        }
+        const previousMove = formattedMoves[moves[i - 1].autoguiMove];
+        const currentMove = formattedMoves[moves[i].autoguiMove];
         if ((previousMove.moveValue === currentMove.moveValue) || (previousMove.moveValue === 'tie' && currentMove.moveValue === 'draw')) {
             if (previousMove.moveValueOpacity < 0.5 || previousMove.deltaRemoteness == currentMove.deltaRemoteness) {
                 currentMove.moveValueOpacity = previousMove.moveValueOpacity;
@@ -374,44 +387,18 @@ export const generateComputerMove = (round: Types.Round) => {
         var desiredRemoteness = (isDrawWin ? Math.min : Math.max)(...bestMoves.map((bestMove) => bestMove.drawRemoteness));
         bestMoves = bestMoves.filter((availableMove) => availableMove.drawRemoteness === desiredRemoteness);
     }
-    return bestMoves[Math.floor(Math.random() * bestMoves.length)].move;
+    return bestMoves[Math.floor(Math.random() * bestMoves.length)].autoguiMove;
 };
 
-<<<<<<< Updated upstream
-export const runMove = async (app: Types.App, payload: { move: string }) => {
-    app.currentMatch.round.move = payload.move;
-    const moveObj = app.currentMatch.round.position.availableMoves[payload.move];
-=======
-
 export const runMove = async (app: Types.App, payload: { autoguiMove: string }) => {
-    console.log(payload)
     app.currentMatch.round.autoguiMove = payload.autoguiMove;
     const moveObj = app.currentMatch.round.position.availableMoves[payload.autoguiMove];
->>>>>>> Stashed changes
     const animationDuration = handleMoveAnimation(app.preferences.volume, app.currentMatch, moveObj);
-
-    if (!moveObj || !moveObj.position) {
-        console.error('moveObj or moveObj.position is undefined.');
-        return; // Exit early to prevent further errors
-    }
-
-    var autoguiPosition = moveObj.position;
-
-    if (typeof autoguiPosition !== 'string') {
-        console.error('autoguiPosition is not a valid string.');
-        return; // Early return to avoid further errors
-    }
-
     if (animationDuration > 0) {
         app.currentMatch.animationPlaying = true;
     }
-
-    if (typeof moveObj.moveValue === 'undefined') {
-        console.error('moveObj.moveValue is undefined.');
-        return; // Exit early to avoid further errors
-    }
     app.currentMatch.round.moveValue = moveObj.moveValue;
-    app.currentMatch.round.autoguiMove = moveObj.autoguiMove;
+    app.currentMatch.round.move = moveObj.move;
 
     // Rewrite history by deleting all subsequent moves made earlier.
     app.currentMatch.rounds.splice(
@@ -427,10 +414,6 @@ export const runMove = async (app: Types.App, payload: { autoguiMove: string }) 
             position: moveObj.position
         });
         if (updatedApp) break;
-    }
-    if (!updatedApp) {
-        console.error("Failed to load position after multiple attempts.");
-        return null; // Early return to avoid further errors
     }
     await new Promise(r => setTimeout(r, animationDuration));
     app.currentMatch.animationPlaying = false;
@@ -449,22 +432,12 @@ export const runMove = async (app: Types.App, payload: { autoguiMove: string }) 
             currentMatch.
             round.
             position.
-            availableMoves[payload.move].
+            availableMoves[payload.autoguiMove].
             position
         ]
     };
-<<<<<<< Updated upstream
-    app.currentMatch.moveHistory += moveHistoryDelim + (moveObj.move ? moveObj.move : moveObj.move);
-    let autoguiPosition = updatedPosition.autoguiPosition;
-=======
     app.currentMatch.moveHistory += moveHistoryDelim + moveObj.move;
-    autoguiPosition = updatedPosition.autoguiPosition;
-    if (!autoguiPosition || typeof autoguiPosition !== 'string') {
-        console.error('autoguiPosition is undefined or not a string.');
-        return null; // Early return to prevent further errors
-    }
-
->>>>>>> Stashed changes
+    let autoguiPosition = updatedPosition.autoguiPosition;
     if ((autoguiPosition.charAt(0) == '1' || autoguiPosition.charAt(0) == '2') && autoguiPosition.charAt(1) == '_') { // in proper autogui format
         app.currentMatch.round.firstPlayerTurn = autoguiPosition.charAt(0) == '1';
     } else if (app.currentMatch.gameType === "puzzles") {
@@ -472,6 +445,7 @@ export const runMove = async (app: Types.App, payload: { autoguiMove: string }) 
     } else { // not in proper autogui format
         app.currentMatch.round.firstPlayerTurn = !app.currentMatch.round.firstPlayerTurn;
     }
+    app.currentMatch.round.autoguiMove = "";
     app.currentMatch.round.move = "";
     app.currentMatch.round.moveValue = "";
     app.currentMatch.round.id += 1;
@@ -521,6 +495,7 @@ const undoRedoAvailable = (app: Types.App, roundOffset: number) => {
 
 const gotoRoundId = (app: Types.App, roundId: number) => {
     app.currentMatch.round = deepcopy(app.currentMatch.rounds[roundId]);
+    app.currentMatch.round.autoguiMove = "";
     app.currentMatch.round.move = "";
     app.currentMatch.round.moveValue = "";
     return app;
@@ -549,9 +524,7 @@ export const redoMove = (app: Types.App) => {
     }
     // Modify move history before changing current round id.
     for (let i = currRoundId; i < toRoundId; ++i) {
-        app.currentMatch.moveHistory += moveHistoryDelim + (
-            app.currentMatch.rounds[i].move
-        );
+        app.currentMatch.moveHistory += moveHistoryDelim + app.currentMatch.rounds[i].move;
     }
     return gotoRoundId(app, toRoundId);
 };
@@ -629,40 +602,4 @@ export const loadCommits = async (app: Types.App, payload?: { force?: boolean })
         };
     }
     return app;
-};
-
-export const loadMoveHistory = async (app: Types.App, payload: { history: string }) => {
-    // Parse and load initial position, return undefined if initial position is invalid
-    payload.history = payload.history.replace(/(\r\n|\n|\r)/gm, "");
-    let parsed = payload.history.split(moveHistoryDelim);
-    if (parsed.length < 2) {
-        return Error("game name or start position missing");
-    }
-    let newApp: Types.App = deepcopy(app);
-    const updatedAppOrError = await updateMatchStartPosition(newApp, { position: parsed[1] });
-    if (updatedAppOrError instanceof Error) {
-        return updatedAppOrError;
-    }
-    exitMatch(newApp);
-    let updatedApp = await initiateMatch(newApp, {
-        gameId: app.currentMatch.gameId,
-        variantId: app.currentMatch.variantId,
-        startPosition: parsed[1]
-    });
-    if (!updatedApp) {
-        return Error("UNREACHED: initiateMatch failed");
-    }
-    // Do move one by one, return undefined if any move is invalid
-    for (let i = 2; i < parsed.length; ++i) {
-        const nextMove = newApp.currentMatch.round.position.availableMoveNames[parsed[i]];
-        if (!nextMove) {
-            return Error("invalid move [" + parsed[i] + "]");
-        }
-        updatedApp = await runMove(newApp, { move: nextMove });
-        if (!updatedApp) {
-            return Error("UNREACHED: runMove returned undefined");
-        }
-    }
-    // Load successful, update app.
-    return newApp;
 };

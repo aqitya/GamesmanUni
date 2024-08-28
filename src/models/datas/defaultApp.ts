@@ -43,6 +43,7 @@ export const defaultPosition: Types.Position = {
     ...defaultUpdate,
     availableMoveNames: {},
     availableMoves: {},
+    moveToAutoguiMove: {},
     position: "",
     autoguiPosition: "",
     positionValue: "",
@@ -144,8 +145,8 @@ export const defaultMatch: Types.Match = {
     variantId: "",
     startPosition: "",
     autoguiStartPosition: "",
-    firstPlayer: {name: "Player 1", isComputer: false},
-    secondPlayer: {name: "Player 2", isComputer: false},
+    firstPlayer: { name: "Player 1", isComputer: false },
+    secondPlayer: { name: "Player 2", isComputer: false },
     rounds: [],
     moveHistory: "",
     round: { ...defaultRound, position: { ...defaultPosition, availableMoves: {} } },
@@ -173,16 +174,19 @@ export const defaultApp: Types.App = {
         gameTheme: "",
         startPosition: "",
         autoguiStartPosition: "",
-        firstPlayer: {name: "Player 1", isComputer: false},
-        secondPlayer: {name: "Player 2", isComputer: false},
+        firstPlayer: { name: "Player 1", isComputer: false },
+        secondPlayer: { name: "Player 2", isComputer: false },
         rounds: [],
         moveHistory: "",
         animationPlaying: false,
         round: {
             ...defaultRound,
-            position: { ...defaultPosition, availableMoves: {} } },
-            backgroundLoading: false,
-            computerMoving: false
+            position: { ...defaultPosition, availableMoves: {} }
+        },
+        backgroundLoading: false,
+        computerMoving: false
     },
     CPUsStrategy: defaultCPUsStrategy,
 };
+
+export const defaultMoveToAutoguiMove: Types.MoveNames = {};

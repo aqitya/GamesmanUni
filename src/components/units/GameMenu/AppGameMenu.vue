@@ -18,16 +18,12 @@
                 <button class="buttons" @click="activeTab = 'CV'">
                     CV
                 </button>
-                <button class="buttons" @click="activeTab = 'CV'">
-                    CV
-                </button>
             </div>
             <div id="app-game-menu-content-active">
                 <AppGameVvh v-show="activeTab === 'vvh'" :isCvInstance="false"/>
                 <!-- <AppGameMenuAnalysis/> -->
                 <AppGameMenuPosition v-show="activeTab === 'startPos'" />
                 <AppGameMenuMoveHistory v-show="activeTab === 'moveHist'" />
-                <AppGameMenuWrapper v-show="activeTab === 'CV'" />
                 <AppGameMenuWrapper v-show="activeTab === 'CV'" />
             </div>
         </div>

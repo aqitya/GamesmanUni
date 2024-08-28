@@ -63,6 +63,7 @@ export type Positions = Record<string, Position>;
 export type Position = {
     availableMoveNames: MoveNames;
     availableMoves: Moves;
+    moveToAutoguiMove: Record<string, string>;
     position: string;
     autoguiPosition: string;
     positionValue: string;
