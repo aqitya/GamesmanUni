@@ -48,7 +48,8 @@ const uploadProgress = ref(0);
 const uploadSuccessMessage = ref<string | null>(null);
 const uploadErrorMessage = ref<string | null>(null);
 
-const s3BucketUrl = '';
+const s3BucketUrl = 'https://aarteebucket.s3.us-east-1.amazonaws.com/';
+const lambda_url = 'https://gxk2mdx64p4whp2oup42jicj3e0cbomu.lambda-url.us-east-1.on.aws/';
 
 const store = useStore();
 const appInstance = computed(() => store.getters.appInstance);
@@ -94,6 +95,15 @@ const uploadVideo = async () => {
     isUploading.value = false;
   }
 };
+const MOVE_MAPPING = {
+  'M_42_49_x': '1',
+  'M_43_50_x': '2',
+  'M_44_51_x': '3',
+  'M_45_52_x': '4',
+  'M_46_53_x': '5',
+  'M_47_54_x': '6',
+  'M_48_55_x': '7'
+};
 
 const invokeFunctionUrlAndRunMoves = async () => {
   if (!selectedFile.value) {
@@ -105,27 +115,78 @@ const invokeFunctionUrlAndRunMoves = async () => {
 
   try {
     const payload = {
-      bucket: '',
-      key: selectedFile.value.name,
+      Records: [
+        {
+          s3: {
+            bucket: {
+              name: "aarteebucket",
+            },
+            object: {
+              key: selectedFile.value.name,
+            }
+          }
+        }
+      ]
     };
 
-    const response = await axios.post('', payload);
+    const response = await axios.post(lambda_url, payload);
+    console.log('Lambda response:', response);
 
     if (response.status !== 200) {
       throw new Error(`Unexpected status code: ${response.status}`);
     }
 
     const result = response.data;
-
-    if (typeof result === 'object' && result.moves) {
+    
+    if (result && result.moves) {
       const moves = result.moves.split('\n');
-      for (const move of moves) {
-        if (move.trim()) {
-          const movePayload = {
-            autoguiMove: "M_45_52_x",
-          };
 
-          await store.dispatch('runMove', movePayload);
+      for (const move of moves) {
+        const trimmedMove = move.trim();
+        if (trimmedMove) {
+          // Wait for store to be ready          
+          // Use the computed appInstance instead of direct app access
+          const currentPosition = appInstance.value?.currentMatch?.round?.position;
+          
+          if (!currentPosition) {
+            console.error('Current position not available');
+            continue;
+          }
+
+          // Find the move number by looking at the availableMoves object
+          const moveEntry = Object.entries(currentPosition.availableMoves)
+            .find(([_, value]) => value.autoguiMove === trimmedMove);
+
+          if (moveEntry) {
+            const [moveNumber, moveObject] = moveEntry;
+            
+            // Create payload matching the store's expected structure
+            const movePayload = {
+              move: moveNumber // Changed from autoguiMove to move
+            };
+            
+            console.log('Processing move:', {
+              original: trimmedMove,
+              moveNumber,
+              moveObject,
+              payload: movePayload
+            });
+            
+            try {              
+              // Dispatch with correct payload structure
+              await store.dispatch('runMove', movePayload);
+              
+              // Verify the move was processed
+              console.log('Move processed. Current position:', appInstance.value?.currentMatch?.round?.position);
+            } catch (moveError) {
+              console.error('Error executing move:', moveError);
+              console.error('Move payload:', movePayload);
+              throw moveError;
+            }
+          } else {
+            console.warn('Move not found in available moves:', trimmedMove);
+            console.log('Available moves:', currentPosition.availableMoves);
+          }
         }
       }
     } else {
@@ -133,12 +194,13 @@ const invokeFunctionUrlAndRunMoves = async () => {
     }
 
   } catch (error) {
-    console.error('Error fetching data from function URL:', error);
-    uploadErrorMessage.value = "Failed to fetch data or run moves. Please try again later.";
+    console.error('Error in move processing:', error);
+    uploadErrorMessage.value = "Failed to process moves. Please try again later.";
   } finally {
     isAnalyzing.value = false;
   }
 };
+
 </script>
 
 <style scoped>

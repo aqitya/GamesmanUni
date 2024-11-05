@@ -16,12 +16,8 @@
         :d="formatArrowPathPoints(arrow, arrowWidth)"
         :class="'iag-button-arrow ' + getBoardMoveElementHintClass(arrow.move)"
         :opacity="options.showNextMoveHints && options.showNextMoveDeltaRemotenesses ? arrow.move.hintOpacity : 1"
-<<<<<<< Updated upstream
         @click="movesAreClickable && store.dispatch(actionTypes.runMove, { move: arrow.move.str })">
-=======
-        @click="handleMoveClick(arrow.move.str)">
->>>>>>> Stashed changes
-        <title>{{ moveButtonTitle(arrow.move.str) }}</title>
+        <title>{{ moveButtonTitle(arrow.move) }}</title>
       </path>
     </template>
 
@@ -63,12 +59,8 @@
               :opacity="options.showNextMoveHints && options.showNextMoveDeltaRemotenesses ? token.move.hintOpacity : 1"
               :style="'--tOrigin: ' + centers[token.center][0] + 'px ' + centers[token.center][1] + 'px'"
               :href="getImageSource(charImages[token.token].image) + '#MoveButtonSVG'"
-<<<<<<< Updated upstream
               @click="movesAreClickable && store.dispatch(actionTypes.runMove, { move: token.move.str })">
-=======
-              @click="handleMoveClick(token.move.str)">
->>>>>>> Stashed changes
-              <title>{{ moveButtonTitle(token.move.str) }}</title>
+              <title>{{ moveButtonTitle(token.move) }}</title>
             </use>
           </g>
 
@@ -79,12 +71,8 @@
             :class="'iag-button-point ' + (token.move ? 'move ' : '') + getBoardMoveElementHintClass(token.move)"
             :opacity="options.showNextMoveHints && options.showNextMoveDeltaRemotenesses ? token.move.hintOpacity : 1"
             :style="'--tOrigin: ' + centers[token.center][0] + 'px ' + centers[token.center][1] + 'px;'"
-<<<<<<< Updated upstream
             @click="movesAreClickable && store.dispatch(actionTypes.runMove, { move: token.move.str })">
-=======
-            @click="handleMoveClick(token.move.str)">
->>>>>>> Stashed changes
-            <title>{{ moveButtonTitle(token.move.str) }}</title>
+            <title>{{ moveButtonTitle(token.move) }}</title>
           </circle>
         </g>
       </g>
@@ -95,13 +83,9 @@
         :class="'iag-button-point ' + (textButton.move ? 'move ' : '') + getBoardMoveElementHintClass(textButton.move)"
         :opacity="options.showNextMoveHints && options.showNextMoveDeltaRemotenesses ? textButton.move.hintOpacity : 1"
         :style="'font-size:' + textButtonFontSize + 'px;stroke:none;--tOrigin: ' + centers[textButton.center][0] + 'px ' + centers[textButton.center][1] + 'px'"
-<<<<<<< Updated upstream
         @click="movesAreClickable && store.dispatch(actionTypes.runMove, { move: textButton.move.str })">
-=======
-        @click="handleMoveClick(textButton.move.str)">
->>>>>>> Stashed changes
         {{ textButton.text }}
-        <title>{{ moveButtonTitle(textButton.move.str) }}</title>
+        <title>{{ moveButtonTitle(textButton.move) }}</title>
       </text>
 
       <!-- Draw M-type (arrow) move buttons on top of entities -->
@@ -110,12 +94,8 @@
           :d="formatArrowPathPoints(arrow, arrowWidth)"
           :class="'iag-button-arrow ' + getBoardMoveElementHintClass(arrow.move)"
           :opacity="options.showNextMoveHints && options.showNextMoveDeltaRemotenesses ? arrow.move.hintOpacity : 1"
-<<<<<<< Updated upstream
           @click="movesAreClickable && store.dispatch(actionTypes.runMove, { move: arrow.move.str })">
-=======
-          @click="handleMoveClick(arrow.move.str)">
->>>>>>> Stashed changes
-          <title>{{ moveButtonTitle(arrow.move.str) }}</title>
+          <title>{{ moveButtonTitle(arrow.move) }}</title>
         </path>
       </template>
 
@@ -128,12 +108,8 @@
         :stroke-width="lineWidth * widthFactor"
         :class="'iag-button-line ' + getBoardMoveElementHintClass(line.move)"
         :opacity="options.showNextMoveHints && options.showNextMoveDeltaRemotenesses ? line.move.hintOpacity : 1"
-<<<<<<< Updated upstream
         @click="movesAreClickable && store.dispatch(actionTypes.runMove, { move: line.move.str })">
-=======
-        @click="handleMoveClick(line.move.str)">
->>>>>>> Stashed changes
-        <title>{{ moveButtonTitle(line.move.str) }}</title>
+        <title>{{ moveButtonTitle(line.move) }}</title>
       </line>
     </template>
   </svg>
@@ -149,11 +125,7 @@
       <div class="move" v-for="listedMove in listedMoves" :key="listedMove.move"
         :class="options.showNextMoveHints ? `uni-${listedMove.moveValue}` : ''"
         :style="{ opacity: options.showNextMoveDeltaRemotenesses ? listedMove.moveValueOpacity : 1 }"
-<<<<<<< Updated upstream
         @click="movesAreClickable && store.dispatch(actionTypes.runMove, { move: listedMove.move })">{{ listedMove.move }}
-=======
-        @click="handleMoveClick(listedMove.autoguiMove)">{{ listedMove.move }}
->>>>>>> Stashed changes
       </div>
     </div>
   </div>
@@ -354,11 +326,11 @@
             L${coords6[0]},${coords6[1]}A ${thickness} ${thickness} 0 0 0 ${coords0[0]} ${coords0[1]}Z`;
   };
 
-  const moveButtonTitle = (moveStr: string): string => {
-    var moveObj = currentAvailableMoves.value[moveStr];
-    var value = moveObj.moveValue[0].toUpperCase() + moveObj.moveValue.substring(1);
-    return options.value.showNextMoveHints ? (value + (value === "Draw" || value === "Unsolved" || moveObj.remoteness < 0 ? ""
-     : (" in " + moveObj.remoteness + (!moveObj.winby ? "" : " or by " + moveObj.winby)))) : "";
+  const moveButtonTitle = (move: IAGMove) => {
+    if (move && move.moveValue !== undefined) {
+      return `${move.moveValue}`;
+    }
+    return '';
   }
 
   const getBoardMoveElementHintClass = (move?: IAGMove): string => 

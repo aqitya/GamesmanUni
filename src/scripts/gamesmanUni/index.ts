@@ -30,13 +30,8 @@ export const loadGames = async (app: Types.App) => {
     return app;
 };
 
-<<<<<<< Updated upstream
-export const addInstructions = async (app: Types.App, payload: {gameId: string, variantId: string}) => {
-    const instructions = await GCTAPI.loadInstructions(`${app.dataSources.gameAPI}${app.currentMatch.gameId}/${app.currentMatch.variantId}/instructions/?lang=${app.preferences.locale}`);
-=======
 export const addInstructions = async (app: Types.App, payload: { gameId: string, variantId: string }) => {
     const instructions = await GCTAPI.loadInstructions(`${app.dataSources.gameAPI}${app.currentMatch.gameId}/${app.currentMatch.variantId}/instructions/?locale=${app.preferences.locale}`);
->>>>>>> Stashed changes
     app.games[payload.gameId].instructions[app.preferences.locale] = instructions ? instructions.instructions : "";
     return app;
 }
@@ -377,45 +372,23 @@ export const generateComputerMove = (round: Types.Round) => {
     return bestMoves[Math.floor(Math.random() * bestMoves.length)].move;
 };
 
-<<<<<<< Updated upstream
-export const runMove = async (app: Types.App, payload: { move: string }) => {
-    app.currentMatch.round.move = payload.move;
-    const moveObj = app.currentMatch.round.position.availableMoves[payload.move];
-=======
 
 export const runMove = async (app: Types.App, payload: { autoguiMove: string }) => {
-    console.log(payload)
     app.currentMatch.round.autoguiMove = payload.autoguiMove;
+    console.log('Available Moves:', app.currentMatch.round.position.availableMoves);
+    console.log('autoguiMove:', payload.autoguiMove);
     const moveObj = app.currentMatch.round.position.availableMoves[payload.autoguiMove];
->>>>>>> Stashed changes
+    console.log('MOVE OBJ', moveObj);
     const animationDuration = handleMoveAnimation(app.preferences.volume, app.currentMatch, moveObj);
-
-    if (!moveObj || !moveObj.position) {
-        console.error('moveObj or moveObj.position is undefined.');
-        return; // Exit early to prevent further errors
-    }
-
-    var autoguiPosition = moveObj.position;
-
-    if (typeof autoguiPosition !== 'string') {
-        console.error('autoguiPosition is not a valid string.');
-        return; // Early return to avoid further errors
-    }
-
     if (animationDuration > 0) {
         app.currentMatch.animationPlaying = true;
     }
-
-    if (typeof moveObj.moveValue === 'undefined') {
-        console.error('moveObj.moveValue is undefined.');
-        return; // Exit early to avoid further errors
-    }
     app.currentMatch.round.moveValue = moveObj.moveValue;
-    app.currentMatch.round.autoguiMove = moveObj.autoguiMove;
+    app.currentMatch.round.move = moveObj.move;
 
     // Rewrite history by deleting all subsequent moves made earlier.
     app.currentMatch.rounds.splice(
-        app.currentMatch.round.id,
+        app.currentMatch.round.id, 
         app.currentMatch.rounds.length - app.currentMatch.round.id
     );
     app.currentMatch.rounds.push(deepcopy(app.currentMatch.round));
@@ -428,10 +401,6 @@ export const runMove = async (app: Types.App, payload: { autoguiMove: string }) 
         });
         if (updatedApp) break;
     }
-    if (!updatedApp) {
-        console.error("Failed to load position after multiple attempts.");
-        return null; // Early return to avoid further errors
-    }
     await new Promise(r => setTimeout(r, animationDuration));
     app.currentMatch.animationPlaying = false;
     animationEpilogue(app.currentMatch);
@@ -440,31 +409,22 @@ export const runMove = async (app: Types.App, payload: { autoguiMove: string }) 
         return app;
     }
 
-    const updatedPosition = {
+    const updatedPosition = { 
         ...updatedApp
-            .games[app.currentMatch.gameId]
-            .variants[app.currentMatch.variantId].
-            positions[
-        app.
+        .games[app.currentMatch.gameId]
+        .variants[app.currentMatch.variantId].
+        positions[
+            app.
             currentMatch.
             round.
             position.
-            availableMoves[payload.move].
+            availableMoves[payload.autoguiMove].
             position
         ]
     };
-<<<<<<< Updated upstream
-    app.currentMatch.moveHistory += moveHistoryDelim + (moveObj.move ? moveObj.move : moveObj.move);
-    let autoguiPosition = updatedPosition.autoguiPosition;
-=======
     app.currentMatch.moveHistory += moveHistoryDelim + moveObj.move;
-    autoguiPosition = updatedPosition.autoguiPosition;
-    if (!autoguiPosition || typeof autoguiPosition !== 'string') {
-        console.error('autoguiPosition is undefined or not a string.');
-        return null; // Early return to prevent further errors
-    }
-
->>>>>>> Stashed changes
+    console.log('Updated Position:', updatedPosition);
+    let autoguiPosition = updatedPosition.autoguiPosition;
     if ((autoguiPosition.charAt(0) == '1' || autoguiPosition.charAt(0) == '2') && autoguiPosition.charAt(1) == '_') { // in proper autogui format
         app.currentMatch.round.firstPlayerTurn = autoguiPosition.charAt(0) == '1';
     } else if (app.currentMatch.gameType === "puzzles") {
@@ -472,6 +432,7 @@ export const runMove = async (app: Types.App, payload: { autoguiMove: string }) 
     } else { // not in proper autogui format
         app.currentMatch.round.firstPlayerTurn = !app.currentMatch.round.firstPlayerTurn;
     }
+    app.currentMatch.round.autoguiMove = "";
     app.currentMatch.round.move = "";
     app.currentMatch.round.moveValue = "";
     app.currentMatch.round.id += 1;
@@ -658,9 +619,9 @@ export const loadMoveHistory = async (app: Types.App, payload: { history: string
         if (!nextMove) {
             return Error("invalid move [" + parsed[i] + "]");
         }
-        updatedApp = await runMove(newApp, { move: nextMove });
+        updatedApp = await runMove(newApp, { autoguiMove: nextMove });
         if (!updatedApp) {
-            return Error("UNREACHED: runMove returned undefined");
+            return Error("Failed to run move");
         }
     }
     // Load successful, update app.
